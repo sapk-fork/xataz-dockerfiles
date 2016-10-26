@@ -42,8 +42,9 @@ RUN export BUILD_DEPS="build-base \
     && rpm -i --notriggers --noscripts --nodeps --nosignature --force /tmp/emby-server.rpm \
     && cp -a /usr/lib/emby-server/bin/* /embyServer && ls /embyServer \
     && sed -i 's/ProgramData-Server/\/embyData/' /embyServer/MediaBrowser.Server.Mono.exe.config \
+    && rm -rf $(rpm -qlp /tmp/emby-server.rpm) /tmp/emby-server.rpm \
     && apk del $BUILD_DEPS \
-    && rm -rf $(rpm -qlp /tmp/emby-server.rpm) /tmp/emby-server.rpm /var/cache/apk/* /tmp/*
+    && rm -rf /var/cache/apk/* /tmp/*
 
 EXPOSE 8096 8920 7359/udp
 VOLUME /embyData
