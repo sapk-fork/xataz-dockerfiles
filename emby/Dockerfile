@@ -12,11 +12,12 @@ LABEL description="Emby based on alpine" \
 
 RUN export BUILD_DEPS="build-base \
                         git \
-                        unzip \
                         wget \
+			rpm@community \
                         ca-certificates" \
+    && echo "@community http://dl-cdn.alpinelinux.org/alpine/edge/community" >> /etc/apk/repositories \
     && apk add -U imagemagick \
-	            sqlite \
+	            sqlite sqlite-dev \
 	            ffmpeg \
 	            s6 \
                 su-exec \
@@ -37,10 +38,12 @@ RUN export BUILD_DEPS="build-base \
     && cd /tmp/MediaInfo_CLI_GNU_FromSource/MediaInfo/Project/GNU/CLI \
     && make install \
     && mkdir /embyServer /embyData \
-    && wget https://github.com/MediaBrowser/Emby.Releases/raw/master/Server/Emby.Mono.zip -O /tmp/Emby.Mono.zip \
-    && unzip /tmp/Emby.Mono.zip -d /embyServer \
+    && curl -o /tmp/emby-server.rpm "http://ftp5.gwdg.de/pub/opensuse/repositories/home:/emby/openSUSE_Tumbleweed/x86_64/emby-server-3.0.8300-85.4.x86_64.rpm" \
+    && rpm -i --notriggers --noscripts --nodeps --nosignature --force /tmp/emby-server.rpm \
+    && cp -a /usr/lib/emby-server/bin/* /embyServer && ls /embyServer \
+    && sed -i 's/ProgramData-Server/\/embyData/' /embyServer/MediaBrowser.Server.Mono.exe.config \
     && apk del $BUILD_DEPS \
-    && rm -rf /var/cache/apk/* /tmp/*
+    && rm -rf $(rpm -qlp /tmp/emby-server.rpm) /tmp/emby-server.rpm /var/cache/apk/* /tmp/*
 
 EXPOSE 8096 8920 7359/udp
 VOLUME /embyData
