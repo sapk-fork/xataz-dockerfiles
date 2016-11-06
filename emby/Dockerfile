@@ -3,6 +3,8 @@ MAINTAINER xataz <https://github.com/xataz>
 
 ARG MEDIAINFO_VER=0.7.88
 
+ENV PKG_REPO="http://ftp.gwdg.de/pub/opensuse/repositories/home:/emby/openSUSE_Tumbleweed/x86_64"
+
 ENV GID=991 \
     UID=991
 
@@ -38,7 +40,8 @@ RUN export BUILD_DEPS="build-base \
     && cd /tmp/MediaInfo_CLI_GNU_FromSource/MediaInfo/Project/GNU/CLI \
     && make install \
     && mkdir /embyServer /embyData \
-    && curl -o /tmp/emby-server.rpm "http://ftp5.gwdg.de/pub/opensuse/repositories/home:/emby/openSUSE_Tumbleweed/x86_64/emby-server-3.0.8300-85.4.x86_64.rpm" \
+    && export PKG=$(curl -L http://ftp.gwdg.de/pub/opensuse/repositories/home:/emby/openSUSE_Tumbleweed/x86_64 | grep emby-server-3 | cut -d\" -f2) \
+    && echo "Getting : $PKG" && curl -o /tmp/emby-server.rpm "$PKG_REPO/$PKG" \
     && rpm -i --notriggers --noscripts --nodeps --nosignature --force /tmp/emby-server.rpm \
     && cp -a /usr/lib/emby-server/bin/* /embyServer && ls /embyServer \
     && sed -i 's/ProgramData-Server/\/embyData/' /embyServer/MediaBrowser.Server.Mono.exe.config \
